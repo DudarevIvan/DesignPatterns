@@ -1,0 +1,102 @@
+import Foundation
+import Combine
+
+
+protocol StateMachine: AnyObject {
+    
+    func setState(_ state: State)
+    
+    func chooseLeft()
+    func chooseRight()
+    
+    func left() -> State
+    func right() -> State
+}
+
+
+protocol State {
+    
+    init(_ stateMachine: StateMachine)
+    
+    func chooseLeft()
+    func chooseRight()
+}
+
+
+class Left: State {
+        
+    private weak var machine: StateMachine?
+    
+    required init(_ stateMachine: StateMachine) {
+        self.machine = stateMachine
+    }
+    
+    func chooseLeft() {
+        print("Left Already chosen!")
+    }
+    
+    func chooseRight() {
+        if let state = machine?.right() {
+            machine?.setState(state)
+            print("Set Right")
+        }
+    }
+}
+
+
+class Right: State {
+    
+    private weak var machine: StateMachine?
+    
+    required init(_ stateMachine: StateMachine) {
+        self.machine = stateMachine
+    }
+    
+    func chooseLeft() {
+        if let state = machine?.left() {
+            machine?.setState(state)
+            print("Set left")
+        }
+    }
+    
+    func chooseRight() {
+        print("Right Already chosen!")
+    }
+}
+
+
+final class ViewModel: StateMachine {
+    
+    private var state: State?
+    
+    init() {
+        self.state = Left(self)
+    }
+    
+    func setState(_ state: State) {
+        self.state = state
+    }
+    
+    // User Intent(s)
+    func chooseLeft() {
+        state?.chooseLeft()
+    }
+    
+    func chooseRight() {
+        state?.chooseRight()
+    }
+    
+    // State Getters
+    func left() -> State {
+        Left(self)
+    }
+    
+    func right() -> State {
+        Right(self)
+    }
+}
+
+let viewModel = ViewModel()
+viewModel.chooseLeft()
+viewModel.chooseRight()
+viewModel.chooseRight()
